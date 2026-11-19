@@ -54,20 +54,34 @@ qreal jsonNumber(const QJsonObject &object, const QString &key, qreal fallback =
     return fallback;
 }
 
-QString conditionIcon(const QString &code, bool night = false)
+QString conditionIcon(const QString &code,
+                      bool night = false,
+                      const QString &description = QString())
 {
-    // Códigos de condição do serviço wttr.in (WeatherAPI/World Weather Online).
     const int value = code.toInt();
     QString base;
 
-    if (value == 113) base = "weather-clear";
-    else if (value == 116) base = "weather-few-clouds";
-    else if (value == 119 || value == 122) base = "weather-overcast";
-    else if (value == 143 || value == 248 || value == 260) base = "weather-fog";
+    // Códigos oficiais utilizados pelo wttr.in.
+    if (value == 113)
+        base = "weather-clear";
+
+    else if (value == 116)
+        base = "weather-few-clouds";
+
+    else if (value == 119 || value == 122)
+        base = "weather-overcast";
+
+    else if (value == 143 || value == 149 || value == 248 || value == 260)
+        base = "weather-fog";
+
     else if (value == 176 || value == 263 || value == 266 ||
-             value == 293 || value == 296 || value == 353) base = "weather-showers";
+             value == 293 || value == 296 || value == 353)
+        base = "weather-showers";
+
     else if (value == 200 || value == 386 || value == 389 ||
-             value == 392 || value == 395) base = "weather-storm";
+             value == 392 || value == 395)
+        base = "weather-storm";
+
     else if (value == 179 || value == 182 || value == 185 ||
              value == 227 || value == 230 || value == 281 ||
              value == 284 || value == 311 || value == 314 ||
@@ -75,15 +89,42 @@ QString conditionIcon(const QString &code, bool night = false)
              value == 326 || value == 329 || value == 332 ||
              value == 335 || value == 338 || value == 350 ||
              value == 362 || value == 365 || value == 368 ||
-             value == 371 || value == 374 || value == 377) base = "weather-snow";
+             value == 371 || value == 374 || value == 377)
+        base = "weather-snow";
+
     else if (value == 299 || value == 302 || value == 305 ||
-             value == 308 || value == 356 || value == 359) base = "weather-rain";
-    else base = "weather-none-available";
+             value == 308 || value == 356 || value == 359)
+        base = "weather-rain";
+
+    else
+    {
+        // Condição não identificada pelo código.
+        // Tenta interpretar a descrição do wttr.in.
+        const QString desc = description.toLower().trimmed();
+
+        if (desc.contains("smok") ||
+            desc.contains("haze") ||
+            desc.contains("mist") ||
+            desc.contains("fog") ||
+            desc.contains("fuma") ||
+            desc.contains("névoa") ||
+            desc.contains("nevoa") ||
+            desc.contains("neblina"))
+        {
+            base = "weather-fog";
+        }
+        else
+        {
+            base = "weather-none-available";
+        }
+    }
 
     if (night && base == "weather-clear")
         return "weather-clear-night";
+
     if (night && base == "weather-few-clouds")
         return "weather-few-clouds-night";
+
     return base;
 }
 
@@ -293,7 +334,13 @@ void WttrInIon::fetchForecast(
         observation.setHumidity(jsonNumber(current, "humidity"));
         observation.setDewpoint(jsonNumber(current, "DewPointC"));
         observation.setUVIndex(static_cast<int>(jsonNumber(current, "uvIndex")));
-        observation.setConditionIcon(conditionIcon(jsonText(current, "weatherCode")));
+        observation.setConditionIcon(
+            conditionIcon(
+                jsonText(current, "weatherCode"),
+                false,
+                jsonText(firstObject(current.value("weatherDesc").toArray()), "value")
+            )
+        );
         forecast->setLastObservation(observation);
 
         auto futureDays = std::make_shared<FutureDays>();
@@ -315,7 +362,13 @@ void WttrInIon::fetchForecast(
 
                 FutureForecast daytime;
                 daytime.setCondition(weatherDescription(morning));
-                daytime.setConditionIcon(conditionIcon(jsonText(morning, "weatherCode")));
+                daytime.setConditionIcon(
+                    conditionIcon(
+                        jsonText(morning, "weatherCode"),
+                        false,
+                        jsonText(firstObject(morning.value("weatherDesc").toArray()), "value")
+                    )
+                );
                 daytime.setHighTemp(jsonNumber(day, "maxtempC"));
                 daytime.setLowTemp(jsonNumber(day, "mintempC"));
                 daytime.setConditionProbability(jsonNumber(morning, "chanceofrain"));
@@ -323,7 +376,13 @@ void WttrInIon::fetchForecast(
 
                 FutureForecast night;
                 night.setCondition(weatherDescription(evening));
-                night.setConditionIcon(conditionIcon(jsonText(evening, "weatherCode"), true));
+                night.setConditionIcon(
+                    conditionIcon(
+                        jsonText(evening, "weatherCode"),
+                        true,
+                        jsonText(firstObject(evening.value("weatherDesc").toArray()), "value")
+                    )
+                );
                 night.setHighTemp(jsonNumber(day, "maxtempC"));
                 night.setLowTemp(jsonNumber(day, "mintempC"));
                 night.setConditionProbability(jsonNumber(evening, "chanceofrain"));
