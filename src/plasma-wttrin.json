@@ -1,0 +1,11 @@
+{
+    "KPlugin": {
+        "Name": "wttr.in",
+        "Description": "Previsão do tempo fornecida pelo wttr.in",
+        "Icon": "weather",
+        "Id": "plasma-wttrin",
+        "Version": "0.1.0"
+    },
+    "Comment": "Provider de previsão do tempo usando wttr.in",
+    "Quality": 5
+}
