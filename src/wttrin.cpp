@@ -3,11 +3,12 @@
 #include <KPluginFactory>
 #include <KUnitConversion/Unit>
 
+#include <QDateTime>
+#include <QTime>
 #include <QDate>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QLocale>
 #include <QStringList>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -349,12 +350,14 @@ void WttrInIon::fetchForecast(
             const QDate date = QDate::fromString(day.value("date").toString(), Qt::ISODate);
             const QJsonArray hourly = day.value("hourly").toArray();
 
-            FutureDayForecast dayForecast;
-            if (date.isValid()) {
-                dayForecast.setMonthDay(date.day());
-                dayForecast.setWeekDay(QLocale(QLocale::Portuguese, QLocale::Brazil)
-                                           .dayName(date.dayOfWeek(), QLocale::ShortFormat));
-            }
+            if (!date.isValid())
+                continue;
+
+            // A API atual exige um QDateTime no construtor.
+            // Meio-dia evita particularidades de transições de horário.
+            FutureDayForecast dayForecast(
+                QDateTime(date, QTime(12, 0))
+            );
 
             if (!hourly.isEmpty()) {
                 const QJsonObject morning = hourly.at(hourly.size() / 3).toObject();

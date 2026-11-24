@@ -30,6 +30,17 @@ QString jsonText(const QJsonObject &object, const QString &key)
     return value.toString();
 }
 
+QString weatherDescription(const QJsonObject &object)
+{
+    // Prioriza a tradução em português fornecida pelo wttr.in.
+    const QString translated = jsonText(object, QStringLiteral("lang_pt"));
+    if (!translated.isEmpty())
+        return translated;
+
+    // Mantém a descrição original como fallback.
+    return jsonText(object, QStringLiteral("weatherDesc"));
+}
+
 qreal jsonNumber(const QJsonObject &object, const QString &key, qreal fallback = 0.0)
 {
     bool ok = false;
@@ -121,7 +132,7 @@ QUrl WttrInIon::makeUrl(const QString &place, const QString &query)
     QUrl url(QStringLiteral("https://wttr.in/") + QString::fromUtf8(QUrl::toPercentEncoding(place)));
     QUrlQuery urlQuery;
     urlQuery.addQueryItem(QStringLiteral("format"), QStringLiteral("j1"));
-    urlQuery.addQueryItem(QStringLiteral("lang"), QStringLiteral("pt-br"));
+    urlQuery.addQueryItem(QStringLiteral("lang"), QStringLiteral("pt"));
     if (!query.isEmpty())
         urlQuery.addQueryItem(QStringLiteral("q"), query);
     url.setQuery(urlQuery);
@@ -271,7 +282,7 @@ void WttrInIon::fetchForecast(
 
         LastObservation observation;
         observation.setObservationTimestamp(QDateTime::currentDateTime());
-        observation.setCurrentConditions(jsonText(firstObject(current.value("weatherDesc").toArray()), "value"));
+        observation.setCurrentConditions(weatherDescription(current));
         observation.setTemperature(jsonNumber(current, "temp_C"));
         observation.setWindchill(jsonNumber(current, "FeelsLikeC"));
         observation.setWindSpeed(jsonNumber(current, "windspeedKmph"));
@@ -303,7 +314,7 @@ void WttrInIon::fetchForecast(
                 const QJsonObject evening = hourly.last().toObject();
 
                 FutureForecast daytime;
-                daytime.setCondition(jsonText(firstObject(morning.value("weatherDesc").toArray()), "value"));
+                daytime.setCondition(weatherDescription(morning));
                 daytime.setConditionIcon(conditionIcon(jsonText(morning, "weatherCode")));
                 daytime.setHighTemp(jsonNumber(day, "maxtempC"));
                 daytime.setLowTemp(jsonNumber(day, "mintempC"));
@@ -311,7 +322,7 @@ void WttrInIon::fetchForecast(
                 dayForecast.setDaytime(daytime);
 
                 FutureForecast night;
-                night.setCondition(jsonText(firstObject(evening.value("weatherDesc").toArray()), "value"));
+                night.setCondition(weatherDescription(evening));
                 night.setConditionIcon(conditionIcon(jsonText(evening, "weatherCode"), true));
                 night.setHighTemp(jsonNumber(day, "maxtempC"));
                 night.setLowTemp(jsonNumber(day, "mintempC"));
