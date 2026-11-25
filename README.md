@@ -1,24 +1,25 @@
 # <u>plasma-wttrin</u>
 
-Provider de clima para o applet nativo de previsão do tempo do KDE Plasma 6.7.x.
+Provider de clima para o applet nativo de previsão do tempo do KDE Plasma 6.x.y.
 
 Utiliza respostas do serviço do site <b>wttr.in<b>
 
-Experimente no terminal:<br>
-curl wttr.in/barretos?lang=pt<br>
-curl wttr.in/barretos?format=3
+Experimente no terminal: <br>
+curl wttr.in/barretos?lang=pt <br>
+curl wttr.in/barretos?format=3 <br>
+curl wttr.in/barretos?format=j2&lang=pt
 
 ## Dependências
 
-No Arch Linux / Manjaro, instale os pacotes de desenvolvimento correspondentes:
-```
-- `cmake`
-- `extra-cmake-modules`
-- `qt6-base`
-- `kf6-kcoreaddons`
-- `kf6-i18n`
-- `kf6-unitconversion`
-- `kdeplasma-addons` (headers e bibliotecas PlasmaWeather)
+Instale os pacotes de desenvolvimento correspondentes:
+```bash
+- cmake
+- extra-cmake-modules
+- qt6-base
+- kf6-kcoreaddons
+- kf6-i18n
+- kf6-unitconversion
+- kdeplasma-addons (headers e bibliotecas PlasmaWeather)
 ```
 
 ## Compilar
