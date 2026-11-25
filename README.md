@@ -2,7 +2,7 @@
 
 Provider de clima para o applet nativo de previsão do tempo do KDE Plasma 6.x.y.
 
-Utiliza respostas do serviço do site <b>wttr.in<b>
+Utiliza respostas do serviço do site <b>wttr.in</b>
 
 Experimente no terminal: <br>
 curl wttr.in/barretos?lang=pt <br>
